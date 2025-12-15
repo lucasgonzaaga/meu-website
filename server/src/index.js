@@ -14,7 +14,9 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-app.post('/api/feedbacks', async (req, res) => {
+const router = express.Router();
+
+router.post('/feedbacks', async (req, res) => {
     try {
         const { name, email, rating, message } = req.body;
 
@@ -41,7 +43,7 @@ app.post('/api/feedbacks', async (req, res) => {
     }
 });
 
-app.get('/api/feedbacks', async (req, res) => {
+router.get('/feedbacks', async (req, res) => {
     try {
         const result = await pool.query(
             'SELECT id, name, rating, message, created_at FROM feedbacks WHERE approved = true ORDER BY created_at DESC'
@@ -53,7 +55,7 @@ app.get('/api/feedbacks', async (req, res) => {
     }
 });
 
-app.post('/api/admin/login', async (req, res) => {
+router.post('/admin/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
@@ -90,7 +92,7 @@ app.post('/api/admin/login', async (req, res) => {
     }
 });
 
-app.get('/api/admin/feedbacks', authenticateToken, async (req, res) => {
+router.get('/admin/feedbacks', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(
             'SELECT * FROM feedbacks ORDER BY created_at DESC'
@@ -102,7 +104,7 @@ app.get('/api/admin/feedbacks', authenticateToken, async (req, res) => {
     }
 });
 
-app.patch('/api/admin/feedbacks/:id/approve', authenticateToken, async (req, res) => {
+router.patch('/admin/feedbacks/:id/approve', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const result = await pool.query(
@@ -121,7 +123,7 @@ app.patch('/api/admin/feedbacks/:id/approve', authenticateToken, async (req, res
     }
 });
 
-app.delete('/api/admin/feedbacks/:id', authenticateToken, async (req, res) => {
+router.delete('/admin/feedbacks/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const result = await pool.query(
@@ -140,9 +142,15 @@ app.delete('/api/admin/feedbacks/:id', authenticateToken, async (req, res) => {
     }
 });
 
-app.get('/api/health', (req, res) => {
+router.get('/health', (req, res) => {
     res.json({ status: 'ok', message: 'API funcionando' });
 });
+
+// Mount router at /api for local dev and / for Vercel (if stripped)
+app.use('/api', router);
+app.use('/', router);
+
+
 
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
