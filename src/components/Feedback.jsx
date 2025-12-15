@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Send, CheckCircle, AlertCircle } from 'lucide-react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { supabase } from '../lib/supabase';
 
 const Feedback = () => {
     const [feedbacks, setFeedbacks] = useState([]);
@@ -23,9 +22,13 @@ const Feedback = () => {
 
     const fetchFeedbacks = async () => {
         try {
-            const response = await fetch(`${API_URL}/feedbacks`);
-            const data = await response.json();
-            setFeedbacks(data);
+            const { data, error } = await supabase
+                .from('feedbacks')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setFeedbacks(data || []);
         } catch (error) {
             console.error('Erro ao buscar feedbacks:', error);
         } finally {
@@ -45,22 +48,20 @@ const Feedback = () => {
         setSubmitStatus(null);
 
         try {
-            const response = await fetch(`${API_URL}/feedbacks`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
+            const { error } = await supabase
+                .from('feedbacks')
+                .insert([formData]);
 
-            if (response.ok) {
-                setSubmitStatus({
-                    type: 'success',
-                    message: 'Feedback enviado com sucesso! Aguardando aprovação.'
-                });
-                setFormData({ name: '', email: '', rating: 0, message: '' });
-            } else {
-                throw new Error('Erro ao enviar feedback');
-            }
+            if (error) throw error;
+
+            setSubmitStatus({
+                type: 'success',
+                message: 'Feedback enviado com sucesso!'
+            });
+            setFormData({ name: '', email: '', rating: 0, message: '' });
+            fetchFeedbacks(); // Refresh list
         } catch (error) {
+            console.error('Erro ao enviar:', error);
             setSubmitStatus({
                 type: 'error',
                 message: 'Erro ao enviar feedback. Tente novamente.'
@@ -229,7 +230,7 @@ const Feedback = () => {
                                 <p>Nenhum feedback ainda. Seja o primeiro!</p>
                             </div>
                         ) : (
-                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                                 {feedbacks.map((feedback, index) => (
                                     <motion.div
                                         key={feedback.id}
