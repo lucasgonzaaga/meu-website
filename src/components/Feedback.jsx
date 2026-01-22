@@ -46,7 +46,6 @@ const Feedback = () => {
             console.error('Erro ao buscar feedbacks:', error);
         } finally {
             setLoading(false);
-            // Refresh ScrollTrigger/Lenis after DOM update
             setTimeout(() => {
                 ScrollTrigger.refresh();
             }, 100);
@@ -99,10 +98,8 @@ const Feedback = () => {
 
     return (
         <section id="feedback" className="min-h-screen bg-black text-white py-40 px-10 md:px-20 relative">
-            <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-32">
+            <div className="max-w-7x2 mx-auto grid grid-cols-1 lg:grid-cols-2 gap-32">
 
-                {/* Modern Form */}
-                {/* Modern Form */}
                 <div className="space-y-16">
                     <h2 ref={titleRef} className="text-[12vw] md:text-[6vw] font-black leading-none font-['Syncopate'] uppercase">
                         Feedback <br /><span className="text-outline">Clientes</span>
@@ -165,9 +162,7 @@ const Feedback = () => {
                     </form>
                 </div>
 
-                {/* Cinematic List */}
                 <div className="relative">
-                    {/* Mobile Header & Swipe Hint */}
                     <div className="md:hidden mb-6 flex items-end justify-between px-1">
                         <h3 className="text-2xl font-black font-['Syncopate'] uppercase tracking-tighter text-white">
                             Relatos de <span className="text-outline">Clientes</span>
