@@ -1,78 +1,190 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;700;900&display=swap');
 
 :root {
-  --color-bg: #FAFBFC;
-  --color-primary: #6366F1;
-  --color-secondary: #06B6D4;
-  --color-text: #0F172A;
-  --color-surface: rgba(99, 102, 241, 0.08);
-  --color-bg-secondary: #F1F5F9;
-  --color-bg-tertiary: #FFFFFF;
-  --color-text-muted: #475569;
+  --color-bg: #050505;
+  --color-primary: #8352FD;
+  --color-secondary: #ff0055;
+  --color-text: #ffffff;
+  --color-text-muted: #666666;
+  --color-surface: rgba(255, 255, 255, 0.05);
 }
 
-:root[data-theme="dark"] {
-  --color-bg: #0F172A;
-  --color-primary: #818CF8;
-  --color-secondary: #22D3EE;
-  --color-text: #F1F5F9;
-  --color-surface: rgba(129, 140, 248, 0.1);
-  --color-bg-secondary: #1E293B;
-  --color-bg-tertiary: #0F172A;
-  --color-text-muted: #94A3B8;
+:root[data-theme='light'] {
+  --color-bg: #f5f5f7;
+  --color-primary: #5c33cf;
+  --color-secondary: #e6004d;
+  --color-text: #1d1d1f;
+  --color-text-muted: #86868b;
+  --color-surface: rgba(0, 0, 0, 0.05);
 }
 
 html,
-body,
-#root {
+body {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
   background-color: var(--color-bg);
   color: var(--color-text);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  cursor: none;
+  /* We will use a custom lens cursor */
+  -webkit-font-smoothing: antialiased;
   scroll-behavior: smooth;
-  cursor: none;
 }
 
-* {
-  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, fill 0.5s ease;
-  cursor: none;
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
+h1,
+h2,
+h3 {
+  font-family: 'Syncopate', sans-serif;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* Global Grain Effect - More intense for Awwwards vibe */
+.grain {
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 9999;
+  animation: noise 0.2s infinite;
+}
+
+@keyframes noise {
+  0% {
+    transform: translate(0, 0)
+  }
+
+  10% {
+    transform: translate(-5%, -5%)
+  }
+
+  20% {
+    transform: translate(-10%, 5%)
+  }
+
+  30% {
+    transform: translate(5%, -10%)
+  }
+
+  40% {
+    transform: translate(-5%, 15%)
+  }
+
+  50% {
+    transform: translate(-10%, 5%)
+  }
+
+  60% {
+    transform: translate(15%, 0)
+  }
+
+  70% {
+    transform: translate(0, 10%)
+  }
+
+  80% {
+    transform: translate(-15%, 0)
+  }
+
+  90% {
+    transform: translate(10%, 5%)
+  }
+
+  100% {
+    transform: translate(5%, 0)
+  }
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg);
+  background: #000;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary);
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+.text-outline {
+  -webkit-text-stroke: 1px var(--color-text);
+  color: transparent;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
+/* Horizontal Scroll Container */
+.horizontal-container {
+  display: flex;
+  width: 500vw;
+  /* Adjust based on content */
+  height: 100vh;
+}
+
+.horizontal-item {
+  width: 100vw;
+  height: 100vh;
+  flex-shrink: 0;
+}
+
+/* Liquid Button Utility */
+.btn-liquid {
+  position: relative;
+  overflow: hidden;
+  padding: 1rem 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   background: transparent;
+  color: #fff;
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: var(--color-surface);
-  border-radius: 20px;
+.btn-liquid:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  transform: scale(1.05);
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-primary);
+/* Mobile Menu Animation */
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.slide-in-from-top {
+  animation: slideInFromTop 0.3s ease-in-out;
 }

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { gsap } from 'gsap';
 
 const Feedback = () => {
     const [feedbacks, setFeedbacks] = useState([]);
@@ -15,9 +16,20 @@ const Feedback = () => {
     const [hoverRating, setHoverRating] = useState(0);
     const [submitting, setSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState(null);
+    const titleRef = useRef();
 
     useEffect(() => {
         fetchFeedbacks();
+        gsap.from(titleRef.current, {
+            scrollTrigger: {
+                trigger: titleRef.current,
+                start: "top 90%",
+            },
+            y: 50,
+            opacity: 0,
+            duration: 1,
+            ease: "power3.out"
+        });
     }, []);
 
     const fetchFeedbacks = async () => {
@@ -38,34 +50,19 @@ const Feedback = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (!formData.name || !formData.email || !formData.rating || !formData.message) {
             setSubmitStatus({ type: 'error', message: 'Preencha todos os campos' });
             return;
         }
-
         setSubmitting(true);
-        setSubmitStatus(null);
-
         try {
-            const { error } = await supabase
-                .from('feedbacks')
-                .insert([formData]);
-
+            const { error } = await supabase.from('feedbacks').insert([formData]);
             if (error) throw error;
-
-            setSubmitStatus({
-                type: 'success',
-                message: 'Feedback enviado com sucesso!'
-            });
+            setSubmitStatus({ type: 'success', message: 'Feedback enviado com sucesso!' });
             setFormData({ name: '', email: '', rating: 0, message: '' });
-            fetchFeedbacks(); // Refresh list
+            fetchFeedbacks();
         } catch (error) {
-            console.error('Erro ao enviar:', error);
-            setSubmitStatus({
-                type: 'error',
-                message: 'Erro ao enviar feedback. Tente novamente.'
-            });
+            setSubmitStatus({ type: 'error', message: 'Erro ao enviar feedback.' });
         } finally {
             setSubmitting(false);
         }
@@ -73,189 +70,153 @@ const Feedback = () => {
 
     const StarRating = ({ rating, onRate, onHover, interactive = true }) => {
         return (
-            <div className="flex gap-2">
+            <div className="flex gap-4">
                 {[1, 2, 3, 4, 5].map((star) => (
-                    <motion.button
+                    <button
                         key={star}
                         type="button"
                         onClick={() => interactive && onRate && onRate(star)}
                         onMouseEnter={() => interactive && onHover && onHover(star)}
                         onMouseLeave={() => interactive && onHover && onHover(0)}
-                        whileHover={interactive ? { scale: 1.2 } : {}}
-                        whileTap={interactive ? { scale: 0.9 } : {}}
-                        className={`${interactive ? 'cursor-pointer' : 'cursor-default'} transition-colors`}
-                        disabled={!interactive}
+                        className={`transition-all duration-300 ${interactive ? 'hover:scale-125' : ''}`}
                     >
                         <Star
-                            className={`w-8 h-8 ${star <= (interactive ? (hoverRating || rating) : rating)
-                                ? 'fill-[var(--color-primary)] text-[var(--color-primary)]'
-                                : 'text-[var(--color-surface)]'
+                            className={`w-10 h-10 ${star <= (interactive ? (hoverRating || rating) : rating)
+                                ? 'fill-white text-white'
+                                : 'text-white/10'
                                 }`}
                         />
-                    </motion.button>
+                    </button>
                 ))}
             </div>
         );
     };
 
     return (
-        <section id="feedback" className="min-h-screen w-full flex flex-col items-center justify-center bg-[var(--color-bg)] text-[var(--color-text)] p-8 md:p-20">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
-                className="w-full max-w-7xl"
-            >
-                <h2 className="text-4xl md:text-6xl font-bold mb-8 text-center tracking-tighter">
-                    Deixe seu <span className="text-[var(--color-primary)]">Feedback</span>
-                </h2>
+        <section id="feedback" className="min-h-screen bg-black text-white py-40 px-10 md:px-20 overflow-hidden relative">
+            <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-32">
 
-                <p className="text-center text-[var(--color-text-muted)] text-lg mb-12 max-w-2xl mx-auto">
-                    Sua opinião é muito importante! Compartilhe sua experiência e ajude a melhorar.
-                </p>
+                {/* Modern Form */}
+                {/* Modern Form */}
+                <div className="space-y-16">
+                    <h2 ref={titleRef} className="text-[12vw] md:text-[6vw] font-black leading-none font-['Syncopate'] uppercase">
+                        Feedback <br /><span className="text-outline">Clientes</span>
+                    </h2>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.6 }}
-                        viewport={{ once: true }}
-                        className="bg-[var(--color-bg-secondary)] p-8 rounded-2xl border border-[var(--color-surface)]"
-                    >
-                        <h3 className="text-2xl font-bold mb-6">Enviar Feedback</h3>
+                    <form onSubmit={handleSubmit} className="space-y-10">
+                        <div className="group relative border-b border-white/20 focus-within:border-white transition-colors duration-500">
+                            <input
+                                type="text"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                className="w-full bg-transparent py-4 outline-none text-2xl font-light placeholder:text-white/10"
+                                placeholder="SEU NOME"
+                            />
+                        </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Nome</label>
-                                <input
-                                    type="text"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-lg bg-[var(--color-bg)] border border-[var(--color-surface)] focus:border-[var(--color-primary)] outline-none transition-colors"
-                                    placeholder="Seu nome"
-                                />
-                            </div>
+                        <div className="group relative border-b border-white/20 focus-within:border-white transition-colors duration-500">
+                            <input
+                                type="email"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                className="w-full bg-transparent py-4 outline-none text-2xl font-light placeholder:text-white/10"
+                                placeholder="SEU EMAIL"
+                            />
+                        </div>
 
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Email</label>
-                                <input
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-lg bg-[var(--color-bg)] border border-[var(--color-surface)] focus:border-[var(--color-primary)] outline-none transition-colors"
-                                    placeholder="seu@email.com"
-                                />
-                            </div>
+                        <div className="py-4">
+                            <StarRating
+                                rating={formData.rating}
+                                onRate={(rating) => setFormData({ ...formData, rating })}
+                                onHover={setHoverRating}
+                            />
+                        </div>
 
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Avaliação</label>
-                                <StarRating
-                                    rating={formData.rating}
-                                    onRate={(rating) => setFormData({ ...formData, rating })}
-                                    onHover={setHoverRating}
-                                />
-                            </div>
+                        <div className="group relative border-b border-white/20 focus-within:border-white transition-colors duration-500">
+                            <textarea
+                                value={formData.message}
+                                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                                rows="3"
+                                className="w-full bg-transparent py-4 outline-none text-2xl font-light placeholder:text-white/10 resize-none"
+                                placeholder="SUA MENSAGEM"
+                            />
+                        </div>
 
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Mensagem</label>
-                                <textarea
-                                    value={formData.message}
-                                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                    rows="4"
-                                    className="w-full px-4 py-3 rounded-lg bg-[var(--color-bg)] border border-[var(--color-surface)] focus:border-[var(--color-primary)] outline-none transition-colors resize-none"
-                                    placeholder="Compartilhe sua experiência..."
-                                />
-                            </div>
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className="btn-liquid w-full uppercase tracking-[0.5em] font-bold text-[12px] border border-white/20 hover:bg-white hover:text-black transition-all duration-700 disabled:opacity-30"
+                        >
+                            {submitting ? 'ENVIANDO...' : 'ENVIAR FEEDBACK'}
+                        </button>
 
-                            <AnimatePresence>
-                                {submitStatus && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0 }}
-                                        className={`flex items-center gap-2 p-4 rounded-lg ${submitStatus.type === 'success'
-                                            ? 'bg-green-500/10 text-green-600 dark:text-green-400'
-                                            : 'bg-red-500/10 text-red-600 dark:text-red-400'
-                                            }`}
-                                    >
-                                        {submitStatus.type === 'success' ? (
-                                            <CheckCircle className="w-5 h-5" />
-                                        ) : (
-                                            <AlertCircle className="w-5 h-5" />
-                                        )}
-                                        <span className="text-sm">{submitStatus.message}</span>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                            <button
-                                type="submit"
-                                disabled={submitting}
-                                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {submitting ? (
-                                    'Enviando...'
-                                ) : (
-                                    <>
-                                        <Send className="w-5 h-5" />
-                                        Enviar Feedback
-                                    </>
-                                )}
-                            </button>
-                        </form>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.6 }}
-                        viewport={{ once: true }}
-                        className="space-y-6"
-                    >
-                        <h3 className="text-2xl font-bold mb-6">Feedbacks Recentes</h3>
-
-                        {loading ? (
-                            <div className="space-y-4">
-                                {[1, 2, 3].map((i) => (
-                                    <div key={i} className="bg-[var(--color-bg-secondary)] p-6 rounded-xl border border-[var(--color-surface)] animate-pulse">
-                                        <div className="h-4 bg-[var(--color-surface)] rounded w-1/3 mb-3"></div>
-                                        <div className="h-3 bg-[var(--color-surface)] rounded w-full mb-2"></div>
-                                        <div className="h-3 bg-[var(--color-surface)] rounded w-2/3"></div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : feedbacks.length === 0 ? (
-                            <div className="text-center py-12 text-[var(--color-text-muted)]">
-                                <p>Nenhum feedback ainda. Seja o primeiro!</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                                {feedbacks.map((feedback, index) => (
-                                    <motion.div
-                                        key={feedback.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: index * 0.1 }}
-                                        className="bg-[var(--color-bg-secondary)] p-6 rounded-xl border border-[var(--color-surface)] hover:border-[var(--color-primary)] transition-colors"
-                                    >
-                                        <div className="flex items-center justify-between mb-3">
-                                            <h4 className="font-semibold">{feedback.name}</h4>
-                                            <StarRating rating={feedback.rating} interactive={false} />
-                                        </div>
-                                        <p className="text-[var(--color-text-muted)] text-sm leading-relaxed">
-                                            {feedback.message}
-                                        </p>
-                                        <p className="text-xs text-[var(--color-text-muted)] mt-3">
-                                            {new Date(feedback.created_at).toLocaleDateString('pt-BR')}
-                                        </p>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        )}
-                    </motion.div>
+                        <AnimatePresence>
+                            {submitStatus && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm uppercase tracking-widest text-center mt-4">
+                                    {submitStatus.message}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </form>
                 </div>
-            </motion.div>
+
+                {/* Cinematic List */}
+                <div className="relative">
+                    {/* Mobile Header & Swipe Hint */}
+                    <div className="md:hidden mb-6 flex items-end justify-between px-1">
+                        <h3 className="text-2xl font-black font-['Syncopate'] uppercase tracking-tighter text-white">
+                            Mural de <span className="text-outline">Amor</span>
+                        </h3>
+                        <span className="text-[10px] items-center gap-2 text-white/40 tracking-widest uppercase animate-pulse hidden xs:flex">
+                            Deslize <span className="text-lg">→</span>
+                        </span>
+                    </div>
+
+                    <div className="hidden md:block absolute -top-20 -right-20 text-[10vw] font-black opacity-[0.03] select-none font-['Syncopate'] uppercase pointer-events-none whitespace-nowrap">
+                        Feedback
+                    </div>
+
+                    <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-4 hide-scrollbar md:block md:space-y-12 md:max-h-[80vh] md:overflow-y-auto md:pr-4 md:custom-scrollbar md:pb-0">
+                        {loading ? (
+                            <div className="space-y-4 animate-pulse w-full">
+                                {[1, 2, 3].map(i => <div key={i} className="h-40 bg-white/5 w-full rounded-sm" />)}
+                            </div>
+                        ) : feedbacks.map((f, i) => (
+                            <div
+                                key={f.id}
+                                className="group relative border-l border-white/5 pl-10 py-6 hover:border-white transition-colors duration-700 min-w-[85vw] snap-center shrink-0 md:w-auto md:min-w-0"
+                            >
+                                <div className="flex justify-between items-start mb-4">
+                                    <h4 className="text-xl font-bold font-['Syncopate'] uppercase tracking-tighter">
+                                        {f.name}
+                                    </h4>
+                                    <div className="flex gap-1">
+                                        {[...Array(f.rating)].map((_, i) => (
+                                            <div key={i} className="w-1 h-3 bg-white" />
+                                        ))}
+                                    </div>
+                                </div>
+                                <p className="text-white/40 text-lg leading-relaxed group-hover:text-white transition-colors duration-500 line-clamp-4 md:line-clamp-none">
+                                    "{f.message}"
+                                </p>
+                                <span className="block mt-4 text-[10px] opacity-20 tracking-widest uppercase">
+                                    {new Date(f.created_at).toLocaleDateString()}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            <style jsx>{`
+                .hide-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .hide-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}</style>
         </section>
     );
 };
