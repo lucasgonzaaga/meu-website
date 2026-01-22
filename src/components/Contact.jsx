@@ -1,64 +1,90 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ArrowUpRight, Mail, Linkedin, Github } from 'lucide-react';
-
-const ContactLink = ({ href, label, icon: Icon }) => {
-    return (
-        <motion.a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-center justify-between w-full max-w-2xl py-8 border-b border-[var(--color-surface)] hover:border-[var(--color-text)] transition-colors duration-300"
-            whileHover={{ x: 20 }}
-        >
-            <div className="flex items-center gap-6">
-                <Icon className="w-8 h-8 md:w-12 md:h-12 text-[var(--color-text-muted)] group-hover:text-[var(--color-text)] transition-colors" />
-                <span className="text-3xl md:text-5xl font-light group-hover:font-medium transition-all duration-300">
-                    {label}
-                </span>
-            </div>
-            <ArrowUpRight className="w-8 h-8 md:w-12 md:h-12 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-2 group-hover:-translate-y-2" />
-        </motion.a>
-    );
-};
+import React, { useRef, useEffect } from 'react';
+import { gsap } from 'gsap';
+import { Mail, Linkedin, Github, Globe } from 'lucide-react';
 
 const Contact = () => {
+    const titleRef = useRef();
+
+    useEffect(() => {
+        gsap.from(titleRef.current, {
+            scrollTrigger: {
+                trigger: titleRef.current,
+                start: "top 90%",
+            },
+            y: 100,
+            opacity: 0,
+            skewY: 5,
+            duration: 1.5,
+            ease: "power4.out"
+        });
+    }, []);
+
+    const links = [
+        { name: "LINKEDIN", url: "https://www.linkedin.com/in/lucas-gonzaga-5a5b90306/", icon: <Linkedin /> },
+        { name: "GITHUB", url: "https://github.com/lucasgonzaaga", icon: <Github /> },
+        { name: "EMAIL", url: "mailto:lucasgonzagasantoss020106@gmail.com", icon: <Mail /> },
+    ];
+
     return (
-        <section id="contact" className="min-h-screen w-full flex flex-col items-center justify-center bg-[var(--color-bg-secondary)] text-[var(--color-text)] p-8 md:p-20 relative overflow-hidden">
+        <section id="contact" className="relative min-h-screen bg-black flex flex-col justify-between py-10 md:py-20 px-6 sm:px-10 md:px-20 overflow-hidden">
+            {/* Massive Background Text */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center opacity-[0.02] pointer-events-none select-none">
+                <span className="text-[15vw] sm:text-[20vw] md:text-[25vw] font-black font-['Syncopate']">OLÁ</span>
+            </div>
 
-            <div className="w-full max-w-4xl z-10 flex flex-col items-center">
-                <motion.h2
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    viewport={{ once: true }}
-                    className="text-5xl md:text-7xl font-bold text-center mb-20 tracking-tighter"
+            <div className="z-10 mt-10 md:mt-20">
+                <h2
+                    ref={titleRef}
+                    className="text-[8vw] sm:text-[10vw] md:text-[8vw] font-black leading-none tracking-tighter uppercase font-['Syncopate'] text-white"
                 >
-                    Vamos criar algo <br /> <span className="text-[var(--color-text-muted)]">juntos?</span>
-                </motion.h2>
+                    Vamos Construir <br /> O Futuro <span className="text-outline">.</span>
+                </h2>
+            </div>
 
-                <div className="w-full flex flex-col gap-2">
-                    <ContactLink
-                        href="mailto:seuemail@exemplo.com"
-                        label="Email"
-                        icon={Mail}
-                    />
-                    <ContactLink
-                        href="https://linkedin.com/in/lucasgonzaaga"
-                        label="LinkedIn"
-                        icon={Linkedin}
-                    />
-                    <ContactLink
-                        href="https://github.com/lucasgonzaaga"
-                        label="GitHub"
-                        icon={Github}
-                    />
+            <div className="z-10 w-full flex flex-col md:flex-row justify-between items-start md:items-end gap-8 md:gap-10">
+                <div className="flex flex-col gap-4 md:gap-6 w-full md:w-auto">
+                    {links.map((link) => (
+                        <a
+                            key={link.name}
+                            href={link.url}
+                            target="_blank"
+                            className="group flex items-center justify-between gap-6 md:gap-10 border-b border-white/10 py-4 md:py-6 w-full md:w-96 hover:border-white transition-colors duration-500"
+                        >
+                            <span className="text-base md:text-xl font-['Syncopate'] tracking-widest text-white/40 group-hover:text-white transition-colors">
+                                {link.name}
+                            </span>
+                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500 flex-shrink-0">
+                                {link.icon}
+                            </div>
+                        </a>
+                    ))}
+                </div>
+
+                <div className="text-left md:text-right flex flex-col items-start md:items-end gap-2">
+                    <Globe className="w-12 h-12 md:w-20 md:h-20 text-white animate-spin-slow opacity-20 mb-2 md:mb-4" />
+                    <p className="text-[9px] md:text-[10px] uppercase tracking-[0.5em] text-white/40">
+                        Disponível para freelance / 2026
+                    </p>
+                    <p className="text-[9px] md:text-[10px] uppercase tracking-[0.5em] text-white/40">
+                        Florianópolis, Brasil
+                    </p>
                 </div>
             </div>
 
-            <footer className="absolute bottom-8 text-[var(--color-text-muted)] text-sm font-light tracking-widest uppercase">
-                © 2025 Lucas Gonzaga
+            <footer className="z-10 border-t border-white/5 pt-8 md:pt-10 mt-10 md:mt-20 flex flex-col md:flex-row justify-between items-center gap-4 text-[8px] md:text-[10px] text-white/20 uppercase tracking-[0.5em] md:tracking-[1em]">
+                <span>© Lucas Gonzaga 2026</span>
+                <span>Criado com GSAP / ThreeJS</span>
             </footer>
+
+            <style>{`
+                @keyframes spin-slow {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                .animate-spin-slow {
+                    animation: spin-slow 15s linear infinite;
+                }
+            `}</style>
         </section>
     );
 };

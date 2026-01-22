@@ -1,53 +1,64 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
 
-const CustomCursor = ({ theme }) => {
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+const CustomCursor = () => {
+    const cursorRef = useRef(null);
+    const dotRef = useRef(null);
 
     useEffect(() => {
-        const mouseMove = (e) => {
-            setMousePosition({
-                x: e.clientX,
-                y: e.clientY
+        const cursor = cursorRef.current;
+        const dot = dotRef.current;
+
+        const onMouseMove = (e) => {
+            const { clientX, clientY } = e;
+
+            // Large circle follows with slight delay
+            gsap.to(cursor, {
+                x: clientX,
+                y: clientY,
+                duration: 0.6,
+                ease: "power3.out"
+            });
+
+            // Small dot follows instantly
+            gsap.to(dot, {
+                x: clientX,
+                y: clientY,
+                duration: 0.1,
+                ease: "none"
             });
         };
 
-        window.addEventListener("mousemove", mouseMove);
+        const onMouseDown = () => gsap.to(cursor, { scale: 0.7, duration: 0.3 });
+        const onMouseUp = () => gsap.to(cursor, { scale: 1, duration: 0.3 });
+
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("mousedown", onMouseDown);
+        window.addEventListener("mouseup", onMouseUp);
 
         return () => {
-            window.removeEventListener("mousemove", mouseMove);
+            window.removeEventListener("mousemove", onMouseMove);
+            window.removeEventListener("mousedown", onMouseDown);
+            window.removeEventListener("mouseup", onMouseUp);
         };
     }, []);
 
-    const variants = {
-        default: {
-            x: mousePosition.x - 16,
-            y: mousePosition.y - 16,
-        }
-    };
-
-    const isDark = theme === 'dark';
-    const color = isDark ? '#8352FD' : '#4F46E5';
-
     return (
-        <motion.div
-            className="fixed top-0 left-0 w-8 h-8 rounded-full pointer-events-none z-[9999] mix-blend-difference"
-            variants={variants}
-            animate="default"
-            transition={{
-                type: "spring",
-                stiffness: 500,
-                damping: 28,
-                mass: 0.5
-            }}
-            style={{
-                background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), ${color})`,
-                boxShadow: `
-                    inset -5px -5px 10px rgba(0,0,0,0.3),
-                    0 0 20px ${color}80
-                `
-            }}
-        />
+        <>
+            {/* The Outer Lens */}
+            <div
+                ref={cursorRef}
+                className="fixed top-0 left-0 w-16 h-16 border border-white/20 rounded-full pointer-events-none z-[10000] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center mix-blend-difference"
+            >
+                <div className="w-1 h-1 bg-white rounded-full opacity-50" />
+            </div>
+
+            {/* The Inner Dot */}
+            <div
+                ref={dotRef}
+                className="fixed top-0 left-0 w-2 h-2 bg-white rounded-full pointer-events-none z-[10000] -translate-x-1/2 -translate-y-1/2 mix-blend-difference"
+            />
+        </>
     );
 };
 

@@ -1,243 +1,158 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Github, ExternalLink, Folder, Star, GitFork, Clock } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Github, ExternalLink, Star, GitFork } from 'lucide-react';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Works = () => {
+    const sectionRef = useRef(null);
+    const triggerRef = useRef(null);
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeFilter, setActiveFilter] = useState('All');
-    const [error, setError] = useState(null);
 
     const featuredRepos = ['portfolio-novo', 'lucasgonzaaga'];
 
+    //conexão com github para pegar os repositórios
     useEffect(() => {
         const fetchProjects = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('https://api.github.com/users/gogotrento/repos?sort=updated&per_page=12');
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch projects');
-                }
-
+                const response = await fetch('https://api.github.com/users/lucasgonzaaga/repos?sort=updated&per_page=10');
+                if (!response.ok) throw new Error('Failed to fetch');
                 const data = await response.json();
                 setProjects(data);
-                setError(null);
             } catch (error) {
                 console.error("Error fetching projects:", error);
-                setError("Não foi possível carregar os projetos. Tente novamente mais tarde.");
             } finally {
                 setLoading(false);
             }
         };
-
         fetchProjects();
     }, []);
 
-    const languages = ['All', ...new Set(projects.map(p => p.language).filter(Boolean))];
+    useEffect(() => {
+        if (loading || projects.length === 0) return;
 
-    const filteredProjects = activeFilter === 'All'
-        ? projects
-        : projects.filter(p => p.language === activeFilter);
+        const section = sectionRef.current;
+        const trigger = triggerRef.current;
 
-    const isFeatured = (projectName) => featuredRepos.includes(projectName);
+        let mm = gsap.matchMedia();
 
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffTime = Math.abs(now - date);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        mm.add("(min-width: 768px)", () => {
+            // Desktop behavior: GSAP Pinning
+            const totalWidth = section.scrollWidth;
+            const pin = gsap.fromTo(
+                section,
+                { x: 0 },
+                {
+                    x: () => -(totalWidth - window.innerWidth),
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: trigger,
+                        pin: true,
+                        scrub: 1,
+                        start: "top top",
+                        end: () => `+=${totalWidth}`,
+                        invalidateOnRefresh: true,
+                    }
+                }
+            );
 
-        if (diffDays === 1) return 'Hoje';
-        if (diffDays < 7) return `${diffDays} dias atrás`;
-        if (diffDays < 30) return `${Math.floor(diffDays / 7)} semanas atrás`;
-        if (diffDays < 365) return `${Math.floor(diffDays / 30)} meses atrás`;
-        return `${Math.floor(diffDays / 365)} anos atrás`;
-    };
+            return () => {
+                pin.kill();
+            };
+        });
 
-    const SkeletonCard = () => (
-        <div className="bg-[var(--color-bg-secondary)] p-8 rounded-2xl border border-[var(--color-surface)] animate-pulse">
-            <div className="flex justify-between items-start mb-6">
-                <div className="w-10 h-10 bg-[var(--color-surface)] rounded"></div>
-                <div className="w-5 h-5 bg-[var(--color-surface)] rounded"></div>
+        // No GSAP animation for mobile (< 768px), using native CSS scroll instead
+
+        return () => mm.revert();
+    }, [loading, projects]);
+
+    if (loading) {
+        return (
+            <div className="min-h-[50vh] md:h-screen flex items-center justify-center bg-black text-white font-['Syncopate'] text-xs uppercase tracking-[1em] animate-pulse">
+                Carregando Repositórios...
             </div>
-            <div className="h-6 bg-[var(--color-surface)] rounded mb-3 w-3/4"></div>
-            <div className="h-4 bg-[var(--color-surface)] rounded mb-2"></div>
-            <div className="h-4 bg-[var(--color-surface)] rounded mb-6 w-5/6"></div>
-            <div className="flex gap-4">
-                <div className="h-4 bg-[var(--color-surface)] rounded w-16"></div>
-                <div className="h-4 bg-[var(--color-surface)] rounded w-16"></div>
-            </div>
-        </div>
-    );
-
-    const ProjectCard = ({ project, index, isFeatured = false }) => (
-        <motion.a
-            key={project.id}
-            href={project.html_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            className={`group relative bg-[var(--color-bg-secondary)] p-8 rounded-2xl border border-[var(--color-surface)] hover:border-[var(--color-primary)] transition-all duration-300 hover:-translate-y-2 overflow-hidden ${isFeatured ? 'md:col-span-2 lg:col-span-1' : ''}`}
-        >
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-primary)] to-transparent opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-sm"></div>
-
-            <div className="relative z-10">
-                <div className="flex justify-between items-start mb-6">
-                    <Folder className="w-10 h-10 text-[var(--color-primary)] opacity-80 group-hover:scale-110 transition-transform" />
-                    <div className="flex gap-4 items-center">
-                        {isFeatured && (
-                            <span className="px-3 py-1 bg-[var(--color-primary)] text-white text-xs rounded-full font-medium">
-                                Destaque
-                            </span>
-                        )}
-                        <ExternalLink className="w-5 h-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors" />
-                    </div>
-                </div>
-
-                <h3 className="text-xl font-bold mb-3 group-hover:text-[var(--color-primary)] transition-colors">
-                    {project.name}
-                </h3>
-
-                <p className="text-[var(--color-text-muted)] text-sm leading-relaxed mb-6 line-clamp-3">
-                    {project.description || "Sem descrição disponível para este projeto."}
-                </p>
-
-                <div className="flex items-center gap-6 text-xs text-[var(--color-text-muted)] mb-4">
-                    {project.language && (
-                        <span className="flex items-center gap-2 font-mono">
-                            <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]"></span>
-                            {project.language}
-                        </span>
-                    )}
-                    {project.stargazers_count > 0 && (
-                        <span className="flex items-center gap-1">
-                            <Star className="w-3 h-3" />
-                            {project.stargazers_count}
-                        </span>
-                    )}
-                    {project.forks_count > 0 && (
-                        <span className="flex items-center gap-1">
-                            <GitFork className="w-3 h-3" />
-                            {project.forks_count}
-                        </span>
-                    )}
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
-                    <Clock className="w-3 h-3" />
-                    <span>Atualizado {formatDate(project.updated_at)}</span>
-                </div>
-            </div>
-        </motion.a>
-    );
+        );
+    }
 
     return (
-        <section id="works" className="min-h-screen w-full flex flex-col items-center justify-center bg-[var(--color-bg)] text-[var(--color-text)] p-8 md:p-20">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
-                className="w-full max-w-7xl"
+        <section id="works" className="relative bg-black pt-0 pb-0 overflow-hidden">
+            {/* 
+                On Mobile: overflow-x-auto enables native horizontal scroll. 
+                snap-x snap-mandatory makes the swipe feel premium.
+            */}
+            <div
+                ref={triggerRef}
+                className="overflow-x-auto overflow-y-hidden md:overflow-visible snap-x snap-mandatory scroll-smooth hide-scrollbar"
             >
-                <h2 className="text-4xl md:text-6xl font-bold mb-8 text-center tracking-tighter">
-                    Meus <span className="text-[var(--color-primary)]">Trabalhos</span>
-                </h2>
-
-                <p className="text-center text-[var(--color-text-muted)] text-lg mb-12 max-w-2xl mx-auto">
-                    Explore meus projetos open-source e trabalhos pessoais
-                </p>
-
-                {!loading && !error && (
-                    <div className="flex flex-wrap justify-center gap-3 mb-12">
-                        {languages.map((lang) => (
-                            <button
-                                key={lang}
-                                onClick={() => setActiveFilter(lang)}
-                                className={`px-6 py-2 rounded-full font-medium transition-all duration-300 ${activeFilter === lang
-                                    ? 'bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/30'
-                                    : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] border border-[var(--color-surface)]'
-                                    }`}
-                            >
-                                {lang}
-                            </button>
-                        ))}
-                    </div>
-                )}
-
-                {error && (
-                    <div className="text-center py-20">
-                        <p className="text-[var(--color-text-muted)] text-lg mb-4">{error}</p>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="px-6 py-3 bg-[var(--color-primary)] text-white rounded-full font-medium hover:opacity-80 transition-opacity"
+                <div
+                    ref={sectionRef}
+                    className="flex h-[60vh] md:h-screen w-max"
+                >
+                    {projects.map((p, index) => (
+                        <div
+                            key={p.id}
+                            className="w-[100vw] h-[60vh] md:h-screen flex flex-col items-center justify-center relative p-6 md:p-20 group snap-center flex-shrink-0"
                         >
-                            Tentar Novamente
-                        </button>
-                    </div>
-                )}
+                            <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[45vw] md:text-[40vw] font-black opacity-[0.03] text-white pointer-events-none select-none font-['Syncopate'] group-hover:opacity-[0.08] transition-opacity duration-1000">
+                                {index + 1 < 10 ? `0${index + 1}` : index + 1}
+                            </h2>
 
-                {loading && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {[...Array(6)].map((_, i) => (
-                            <SkeletonCard key={i} />
-                        ))}
-                    </div>
-                )}
+                            <div className="z-10 flex flex-col items-center w-full max-w-2xl md:max-w-4xl text-center">
+                                <span className="text-[10px] md:text-[10px] uppercase tracking-[1em] text-white/40 mb-3 md:mb-4 block">
+                                    {new Date(p.created_at).getFullYear()}
+                                </span>
 
-                {!loading && !error && (
-                    <div className="space-y-12">
-                        {filteredProjects.length > 0 ? (
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={activeFilter}
-                                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                                >
-                                    {filteredProjects.map((project, index) => (
-                                        <ProjectCard
-                                            key={project.id}
-                                            project={project}
-                                            index={index}
-                                            isFeatured={isFeatured(project.name)}
-                                        />
-                                    ))}
-                                </motion.div>
-                            </AnimatePresence>
-                        ) : (
-                            <div className="text-center py-20">
-                                <p className="text-[var(--color-text-muted)] text-lg">
-                                    Nenhum projeto encontrado nesta categoria.
+                                <h3 className="text-[8vw] md:text-[8vw] font-black leading-none tracking-tighter font-['Syncopate'] text-white uppercase break-words px-4">
+                                    {p.name.replace(/-/g, ' ')}
+                                </h3>
+
+                                <p className="mt-6 md:mt-8 text-white/30 text-[10px] md:text-sm uppercase tracking-widest max-w-[80vw] md:max-w-lg">
+                                    {p.description || "Página moderna desenvolvida para apresentar o trabalho e atrair potenciais clientes."}
                                 </p>
-                            </div>
-                        )}
-                    </div>
-                )}
 
-                {!loading && !error && projects.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        transition={{ delay: 0.5 }}
-                        className="text-center mt-16"
-                    >
-                        <a
-                            href="https://github.com/gogotrento"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--color-text)] text-[var(--color-bg)] rounded-full font-medium hover:opacity-80 transition-all transform hover:scale-105"
-                        >
-                            <Github className="w-5 h-5" />
-                            Ver Todos no GitHub
-                        </a>
-                    </motion.div>
-                )}
-            </motion.div>
+                                <div className="mt-8 md:mt-12 flex gap-4 md:gap-6">
+                                    <div
+                                        className="w-14 h-14 md:w-32 md:h-32 rounded-full flex items-center justify-center border border-white/10 group-hover:border-white/40 active:scale-95 transition-all duration-700 overflow-hidden cursor-pointer relative"
+                                        onClick={() => window.open(p.html_url, '_blank')}
+                                    >
+                                        <div className="absolute inset-x-0 h-0 group-hover:h-full bg-white transition-all duration-700 ease-in-out top-0" />
+                                        <Github className="relative z-10 w-5 h-5 md:w-6 md:h-6 group-hover:text-black transition-colors" />
+                                    </div>
+
+                                    {p.homepage && (
+                                        <div
+                                            className="w-14 h-14 md:w-32 md:h-32 rounded-full flex items-center justify-center border border-white/10 group-hover:border-white/40 active:scale-95 transition-all duration-700 overflow-hidden cursor-pointer relative"
+                                            onClick={() => window.open(p.homepage, '_blank')}
+                                        >
+                                            <div className="absolute inset-x-0 h-0 group-hover:h-full bg-white transition-all duration-700 ease-in-out top-0" />
+                                            <ExternalLink className="relative z-10 w-5 h-5 md:w-6 md:h-6 group-hover:text-black transition-colors" />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="absolute bottom-6 md:bottom-10 left-6 md:left-10 text-[8px] md:text-[10px] text-white/30 tracking-[1em] uppercase flex items-center gap-3 md:gap-4">
+                                <Star className="w-2 h-2 md:w-3 md:h-3" /> <span>{p.stargazers_count}</span>
+                                <span>•</span>
+                                <GitFork className="w-2 h-2 md:w-3 md:h-3" /> <span>{p.forks_count}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <style jsx>{`
+                .hide-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .hide-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}</style>
         </section>
     );
 };

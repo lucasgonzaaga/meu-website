@@ -1,93 +1,83 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, Sun, Moon } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
+import { Moon, Sun, Menu, X } from 'lucide-react';
 
-const Navbar = ({ theme, toggleTheme }) => {
+const Navbar = ({ theme, toggleTheme, loading }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    const links = [
+    const navLinks = [
         { name: 'Início', href: '#home' },
-        { name: 'Sobre', href: '#about' },
+        { name: 'Sobre mim', href: '#about' },
         { name: 'Trabalhos', href: '#works' },
         { name: 'Feedbacks', href: '#feedback' },
         { name: 'Contato', href: '#contact' },
     ];
 
+    const toggleMenu = () => setIsOpen(!isOpen);
+
     return (
-        <nav
-            className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-black/50 backdrop-blur-md border-b border-white/10' : 'bg-transparent'
-                }`}
-        >
-            <div className="max-w-7xl mx-auto px-6 py-4 flex justify-center items-center relative">
+        <>
+            <nav className="fixed top-0 left-0 right-0 z-[10001] px-6 md:px-12 py-6 md:py-10 bg-transparent">
+                <div className="flex items-center justify-between w-full">
+                    {/* Logo - Left */}
+                    <div className="flex items-center gap-4 font-bold tracking-[0.5em] uppercase text-[10px] text-[var(--color-text)]">
+                        <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full animate-pulse" />
+                        Lucas Gonzaga
+                    </div>
 
-                <div className="hidden md:flex gap-12 bg-white/5 px-8 py-3 rounded-full backdrop-blur-sm border border-white/5 items-center">
-                    {links.map((link) => (
-                        <a
-                            key={link.name}
-                            href={link.href}
-                            className="text-sm font-medium text-[var(--color-text-muted)] hover:text-[#8352FD] transition-colors uppercase tracking-widest"
+                    {/* Desktop Links - Center */}
+                    <div className="hidden md:flex items-center gap-12">
+                        {navLinks.map((link) => (
+                            <a
+                                key={link.name}
+                                href={link.href}
+                                className="text-[10px] uppercase tracking-[0.5em] font-bold text-[var(--color-text)] opacity-50 hover:opacity-100 transition-opacity relative group"
+                            >
+                                {link.name}
+                                <div className="absolute -bottom-2 left-0 w-0 h-[1px] bg-[var(--color-text)] transition-all duration-500 group-hover:w-full" />
+                            </a>
+                        ))}
+                    </div>
+
+                    {/* Right Side - Theme & Mobile Toggle */}
+                    <div className="flex items-center gap-4 md:gap-6">
+                        <button
+                            onClick={toggleTheme}
+                            className="p-2 border border-[var(--color-surface)] rounded-full text-[var(--color-text)] hover:bg-[var(--color-text)] hover:text-[var(--color-bg)] transition-all duration-500"
+                            type="button"
                         >
-                            {link.name}
-                        </a>
-                    ))}
+                            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+                        </button>
+
+                        {/* Mobile Toggle */}
+                        <button
+                            onClick={toggleMenu}
+                            className="p-2 md:hidden text-[var(--color-text)]"
+                            type="button"
+                        >
+                            {isOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+                    </div>
                 </div>
+            </nav>
 
-                <button
-                    onClick={toggleTheme}
-                    className="hidden md:block text-gray-300 hover:text-[#8352FD] transition-colors absolute right-6"
-                    aria-label="Toggle theme"
-                >
-                    {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-                </button>
-
-                <div className="md:hidden flex items-center gap-4 absolute right-6">
-                    <button
-                        onClick={toggleTheme}
-                        className="text-white"
-                        aria-label="Toggle theme"
-                    >
-                        {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
-                    </button>
-                    <button
-                        className="text-white"
-                        onClick={() => setIsOpen(!isOpen)}
-                    >
-                        {isOpen ? <X /> : <Menu />}
-                    </button>
-                </div>
-            </div>
-
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="absolute top-full left-0 w-full bg-black/90 backdrop-blur-lg border-b border-white/10 md:hidden flex flex-col items-center py-8 gap-6"
-                    >
-                        {links.map((link) => (
+            {/* Mobile Menu Overlay */}
+            {isOpen && (
+                <div className="fixed top-0 left-0 w-full h-screen bg-[var(--color-bg)] z-[1000] flex flex-col items-center justify-center md:hidden pt-20 animate-in fade-in slide-in-from-top duration-300">
+                    <div className="flex flex-col items-center gap-8">
+                        {navLinks.map((link) => (
                             <a
                                 key={link.name}
                                 href={link.href}
                                 onClick={() => setIsOpen(false)}
-                                className="text-lg font-medium text-[var(--color-text-muted)] hover:text-[#8352FD] transition-colors"
+                                className="text-3xl sm:text-4xl font-black uppercase tracking-tighter text-[var(--color-text)] font-['Syncopate'] hover:text-[var(--color-primary)] transition-colors"
                             >
                                 {link.name}
                             </a>
                         ))}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </nav>
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 
