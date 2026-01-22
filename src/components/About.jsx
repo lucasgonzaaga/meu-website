@@ -82,15 +82,6 @@ const About = () => {
                             Morando em <span className="text-outline text-white opacity-40">Florianópolis</span>, criando para o mundo.
                         </p>
                     </div>
-
-                    <div className="pt-8 md:pt-10">
-                        <div className="flex items-center gap-4 md:gap-6 group cursor-pointer">
-                            <div className="w-12 md:w-20 h-[1px] bg-white transition-all duration-500 group-hover:w-24 md:group-hover:w-40" />
-                            <span className="uppercase tracking-[0.5em] text-[10px] md:text-[12px] font-bold underline transition-all duration-500 group-hover:pl-2 md:group-hover:pl-4">
-                                Baixar Curriculo
-                            </span>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>

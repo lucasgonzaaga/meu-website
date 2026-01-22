@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 const Feedback = () => {
     const [feedbacks, setFeedbacks] = useState([]);
@@ -45,6 +46,9 @@ const Feedback = () => {
             console.error('Erro ao buscar feedbacks:', error);
         } finally {
             setLoading(false);
+            setTimeout(() => {
+                ScrollTrigger.refresh();
+            }, 100);
         }
     };
 
@@ -93,11 +97,9 @@ const Feedback = () => {
     };
 
     return (
-        <section id="feedback" className="min-h-screen bg-black text-white py-40 px-10 md:px-20 overflow-hidden relative">
-            <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-32">
+        <section id="feedback" className="min-h-screen bg-black text-white py-40 px-10 md:px-20 relative">
+            <div className="max-w-7x2 mx-auto grid grid-cols-1 lg:grid-cols-2 gap-32">
 
-                {/* Modern Form */}
-                {/* Modern Form */}
                 <div className="space-y-16">
                     <h2 ref={titleRef} className="text-[12vw] md:text-[6vw] font-black leading-none font-['Syncopate'] uppercase">
                         Feedback <br /><span className="text-outline">Clientes</span>
@@ -160,12 +162,10 @@ const Feedback = () => {
                     </form>
                 </div>
 
-                {/* Cinematic List */}
                 <div className="relative">
-                    {/* Mobile Header & Swipe Hint */}
                     <div className="md:hidden mb-6 flex items-end justify-between px-1">
                         <h3 className="text-2xl font-black font-['Syncopate'] uppercase tracking-tighter text-white">
-                            Mural de <span className="text-outline">Amor</span>
+                            Relatos de <span className="text-outline">Clientes</span>
                         </h3>
                         <span className="text-[10px] items-center gap-2 text-white/40 tracking-widest uppercase animate-pulse hidden xs:flex">
                             Deslize <span className="text-lg">→</span>
@@ -176,7 +176,7 @@ const Feedback = () => {
                         Feedback
                     </div>
 
-                    <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-4 hide-scrollbar md:block md:space-y-12 md:max-h-[80vh] md:overflow-y-auto md:pr-4 md:custom-scrollbar md:pb-0">
+                    <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-4 hide-scrollbar md:block md:space-y-12 md:h-auto md:overflow-visible">
                         {loading ? (
                             <div className="space-y-4 animate-pulse w-full">
                                 {[1, 2, 3].map(i => <div key={i} className="h-40 bg-white/5 w-full rounded-sm" />)}
@@ -192,7 +192,7 @@ const Feedback = () => {
                                     </h4>
                                     <div className="flex gap-1">
                                         {[...Array(f.rating)].map((_, i) => (
-                                            <div key={i} className="w-1 h-3 bg-white" />
+                                            <Star key={i} className="w-3 h-3 md:w-4 md:h-4 fill-white text-white" />
                                         ))}
                                     </div>
                                 </div>
