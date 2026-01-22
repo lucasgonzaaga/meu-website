@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 const Feedback = () => {
     const [feedbacks, setFeedbacks] = useState([]);
@@ -45,6 +46,10 @@ const Feedback = () => {
             console.error('Erro ao buscar feedbacks:', error);
         } finally {
             setLoading(false);
+            // Refresh ScrollTrigger/Lenis after DOM update
+            setTimeout(() => {
+                ScrollTrigger.refresh();
+            }, 100);
         }
     };
 
@@ -93,7 +98,7 @@ const Feedback = () => {
     };
 
     return (
-        <section id="feedback" className="min-h-screen bg-black text-white py-40 px-10 md:px-20 overflow-hidden relative">
+        <section id="feedback" className="min-h-screen bg-black text-white py-40 px-10 md:px-20 relative">
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-32">
 
                 {/* Modern Form */}
@@ -165,7 +170,7 @@ const Feedback = () => {
                     {/* Mobile Header & Swipe Hint */}
                     <div className="md:hidden mb-6 flex items-end justify-between px-1">
                         <h3 className="text-2xl font-black font-['Syncopate'] uppercase tracking-tighter text-white">
-                            Mural de <span className="text-outline">Amor</span>
+                            Relatos de <span className="text-outline">Clientes</span>
                         </h3>
                         <span className="text-[10px] items-center gap-2 text-white/40 tracking-widest uppercase animate-pulse hidden xs:flex">
                             Deslize <span className="text-lg">→</span>
@@ -176,7 +181,7 @@ const Feedback = () => {
                         Feedback
                     </div>
 
-                    <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-4 hide-scrollbar md:block md:space-y-12 md:max-h-[80vh] md:overflow-y-auto md:pr-4 md:custom-scrollbar md:pb-0">
+                    <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-4 hide-scrollbar md:block md:space-y-12 md:h-auto md:overflow-visible">
                         {loading ? (
                             <div className="space-y-4 animate-pulse w-full">
                                 {[1, 2, 3].map(i => <div key={i} className="h-40 bg-white/5 w-full rounded-sm" />)}
