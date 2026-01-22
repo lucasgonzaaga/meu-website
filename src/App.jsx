@@ -37,7 +37,9 @@ function App() {
         className={`bg-[var(--color-bg)] min-h-screen text-[var(--color-text)] transition-colors duration-500 ${loading ? 'opacity-0' : 'opacity-100'}`}
         style={{ transition: 'opacity 1s ease-in-out' }}
       >
-        <CustomCursor theme={theme} />
+        <div className="hidden md:block">
+          <CustomCursor theme={theme} />
+        </div>
         <Navbar theme={theme} toggleTheme={toggleTheme} loading={loading} />
         <Hero theme={theme} loading={loading} />
         <About />

@@ -192,7 +192,7 @@ const Feedback = () => {
                                     </h4>
                                     <div className="flex gap-1">
                                         {[...Array(f.rating)].map((_, i) => (
-                                            <div key={i} className="w-1 h-3 bg-white" />
+                                            <Star key={i} className="w-3 h-3 md:w-4 md:h-4 fill-white text-white" />
                                         ))}
                                     </div>
                                 </div>

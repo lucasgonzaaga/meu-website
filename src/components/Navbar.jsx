@@ -40,13 +40,7 @@ const Navbar = ({ theme, toggleTheme, loading }) => {
 
                     {/* Right Side - Theme & Mobile Toggle */}
                     <div className="flex items-center gap-4 md:gap-6">
-                        <button
-                            onClick={toggleTheme}
-                            className="p-2 border border-[var(--color-surface)] rounded-full text-[var(--color-text)] hover:bg-[var(--color-text)] hover:text-[var(--color-bg)] transition-all duration-500"
-                            type="button"
-                        >
-                            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-                        </button>
+
 
                         {/* Mobile Toggle */}
                         <button
